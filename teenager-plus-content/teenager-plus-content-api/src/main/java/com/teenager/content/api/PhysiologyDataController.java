@@ -1,19 +1,26 @@
 package com.teenager.content.api;
 
+import com.alibaba.fastjson.JSON;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.teenager.content.common.R;
+import com.teenager.content.config.TokenUtils;
 import com.teenager.content.model.po.HeartData;
 import com.teenager.content.model.po.PhysiologyData;
 import com.teenager.content.service.PhysiologyDataService;
 import lombok.extern.slf4j.Slf4j;
+import org.redisson.api.RLock;
+import org.redisson.api.RedissonClient;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.web.bind.annotation.*;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 import java.math.BigDecimal;
 import java.util.Date;
 import java.util.List;
 import java.util.Random;
+import java.util.concurrent.TimeUnit;
 
 /**
  * @author Xue
@@ -25,6 +32,10 @@ import java.util.Random;
 public class PhysiologyDataController {
     @Autowired
     private PhysiologyDataService physiologyDataService;
+    @Autowired
+    private RedisTemplate redisTemplate;
+    @Autowired
+    private RedissonClient redissonClient;
 
     /**
      * 保存生理数据
@@ -32,7 +43,7 @@ public class PhysiologyDataController {
      * @return
      */
     @PostMapping("/receive")
-    public R<String> receive(@RequestBody HeartData heartData, HttpSession session){
+    public R<String> receive(@RequestBody HeartData heartData, HttpSession session,HttpServletRequest request){
         if(heartData.isFlag()){
 //          模拟数据
             BigDecimal bloodHighPressure= BigDecimal.valueOf(RandomDouble(90, 180));
@@ -45,7 +56,8 @@ public class PhysiologyDataController {
             BigDecimal distance=BigDecimal.valueOf((double)steps*6/10000);
             int climb=RandomInt(100,500);
             Integer heat=RandomInt(steps*36/1000,steps*48/1000)+RandomInt(climb/20,climb/10);
-            Long userId = (Long)session.getAttribute("user");
+            String token = request.getHeader("token");
+            Long userId = TokenUtils.getUserId(token);
 //           设置数据
             PhysiologyData physiologyData = new PhysiologyData(null,heartData.getHeart(),bloodHighPressure,bloodLowPressure,bloodOxygen,temperature,sleepTime,steps,exerciseTime,distance,heat,climb,userId,new Date());
             physiologyDataService.save(physiologyData);
@@ -59,11 +71,12 @@ public class PhysiologyDataController {
      * @return
      */
     @GetMapping("/getLast")
-    public R<PhysiologyData> getLast(HttpSession session){
-//        Long userId = (Long)session.getAttribute("user");
+    public R<PhysiologyData> getLast(HttpSession session,HttpServletRequest request){
+        String token = request.getHeader("token");
+        Long userId = TokenUtils.getUserId(token);
         LambdaQueryWrapper<PhysiologyData> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.orderByDesc(PhysiologyData::getCreateTime);
-//        queryWrapper.eq(PhysiologyData::getUserId,userId);
+        queryWrapper.eq(PhysiologyData::getUserId,userId);
         queryWrapper.last("limit 1");
         PhysiologyData physiologyData = physiologyDataService.getOne(queryWrapper);
         return R.success(physiologyData);
@@ -75,14 +88,34 @@ public class PhysiologyDataController {
      * @return
      */
     @GetMapping("/getAll")
-    public R<List<PhysiologyData>> getAll(HttpSession session){
-//        Long userId = (Long)session.getAttribute("user");
-        LambdaQueryWrapper<PhysiologyData> queryWrapper = new LambdaQueryWrapper<>();
-//        queryWrapper.eq(PhysiologyData::getUserId,userId);
-        queryWrapper.orderByAsc(PhysiologyData::getCreateTime);
-        List<PhysiologyData> physiologyDataList = physiologyDataService.list(queryWrapper);
-        return R.success(physiologyDataList);
+    public R<List<PhysiologyData>> getAll(HttpSession session,HttpServletRequest request){
+        String token = request.getHeader("token");
+        Long userId = TokenUtils.getUserId(token);
+        Object o = redisTemplate.opsForValue().get("physiology:" + userId);
+        if(o==null){
+            RLock lock=redissonClient.getLock("physiologyquerylock:"+userId);
+            lock.lock();
+            try{
+                o=redisTemplate.opsForValue().get("physiology:"+userId);
+                if(o!=null){
+                    return R.success(JSON.parseArray(o.toString(),PhysiologyData.class));
+                }
+                LambdaQueryWrapper<PhysiologyData> queryWrapper = new LambdaQueryWrapper<>();
+                queryWrapper.eq(PhysiologyData::getUserId,userId);
+                queryWrapper.orderByAsc(PhysiologyData::getCreateTime);
+                List<PhysiologyData> physiologyDataList = physiologyDataService.list(queryWrapper);
+                redisTemplate.opsForValue().set("physiology:" + userId,JSON.toJSONString(physiologyDataList),30, TimeUnit.MINUTES);
+                return R.success(physiologyDataList);
+            }finally {
+                lock.unlock();
+            }
+        }
+        //            找到了
+        if(o.toString().equals("null")) return R.error("不存在相应记录");
+        return R.success(JSON.parseArray(o.toString(),PhysiologyData.class));
     }
+
+
 
     /**
      * 获取最近七条数据
@@ -90,10 +123,11 @@ public class PhysiologyDataController {
      * @return
      */
     @GetMapping("/getLastSeven")
-    public R<List<PhysiologyData>> getLastSeven(HttpSession session){
-//        Long userId = (Long)session.getAttribute("user");
+    public R<List<PhysiologyData>> getLastSeven(HttpSession session,HttpServletRequest request){
+        String token = request.getHeader("token");
+        Long userId = TokenUtils.getUserId(token);
         LambdaQueryWrapper<PhysiologyData> queryWrapper = new LambdaQueryWrapper<>();
-//        queryWrapper.eq(PhysiologyData::getUserId,userId);
+        queryWrapper.eq(PhysiologyData::getUserId,userId);
         queryWrapper.orderByDesc(PhysiologyData::getCreateTime);
         queryWrapper.last("limit 7");
         List<PhysiologyData> physiologyDataList = physiologyDataService.list(queryWrapper);
