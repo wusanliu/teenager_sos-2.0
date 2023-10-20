@@ -1,0 +1,22 @@
+#微服务配置
+spring:
+  application:
+    name: content-api
+  cloud:
+    nacos:
+      server-addr: 192.168.136.133:8848
+      discovery:
+        namespace: dev
+        group: teenager-plus-project
+      config:
+        namespace: dev
+        group: teenager-plus-project
+        file-extension: yaml
+        refresh-enabled: true
+        extension-configs:
+          - data-id: content-service-${spring.profiles.active}.yaml
+            group: teenager-plus-project
+            refresh: true
+
+  profiles:
+    active: dev
