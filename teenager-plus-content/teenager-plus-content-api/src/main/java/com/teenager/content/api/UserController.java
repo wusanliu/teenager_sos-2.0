@@ -1,5 +1,6 @@
 package com.teenager.content.api;
 
+import cn.hutool.jwt.JWT;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.teenager.content.common.R;
 import com.teenager.content.config.TokenUtils;
@@ -8,10 +9,13 @@ import com.teenager.content.model.po.User;
 import com.teenager.content.service.UserService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
+import java.nio.charset.StandardCharsets;
 
 /**
  * @author Xue
@@ -25,27 +29,25 @@ public class UserController {
     @Autowired
     private UserService userService;
 
+    @Autowired
+    AuthenticationManager authenticationManager;
+
     @PostMapping("/login")
-    public R<UserDto> login(@RequestBody User user, HttpSession session){
-        LambdaQueryWrapper<User> queryWrapper = new LambdaQueryWrapper<>();
-        queryWrapper.eq(User::getUsername,user.getUsername());
-        User user1 = userService.getOne(queryWrapper);
+    public R<UserDto> login(@RequestBody User user){
+        //对传入的用户进行判断（封装账号和密码，并且交给AuthenticationManager）
+        UsernamePasswordAuthenticationToken authenticationToken =
+                new UsernamePasswordAuthenticationToken(user.getUsername(), user.getPassword());
+        authenticationManager.authenticate(authenticationToken);
 
-        if (user1==null){
-            return R.error("用户不存在");
-        }
-        if (!user1.getPassword().equals(user.getPassword())){
-            return R.error("密码错误");
-        }
-
-        String token= TokenUtils.token(user1.getId(),user1.getPassword());
+        //上一步没有抛出异常说明认证成功，我们向用户颁发jwt令牌
+        String token = JWT.create()
+                .setPayload("username", user.getUsername())
+                .setKey("JWT_KEY".getBytes(StandardCharsets.UTF_8))
+                .sign();
         UserDto userDto = new UserDto();
-        userDto.setUser(user1);
+        userDto.setUser(user);
         userDto.setToken(token);
-        //        把数据存到session域中，后续再使用redis
-        session.setAttribute("token",token);
         return R.success(userDto);
-
     }
 
     @PostMapping("/register")

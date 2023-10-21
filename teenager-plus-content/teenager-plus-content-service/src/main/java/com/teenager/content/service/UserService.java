@@ -8,4 +8,5 @@ import com.teenager.content.model.po.User;
  * @create 2023-03-26-9:12
  */
 public interface UserService extends IService<User> {
+    User getUserByName(String username);
 }
