@@ -1,4 +1,4 @@
-package com.teenager.content.filter;
+package com.teenager.content.security;
 
 import cn.hutool.jwt.JWTUtil;
 import lombok.extern.slf4j.Slf4j;
