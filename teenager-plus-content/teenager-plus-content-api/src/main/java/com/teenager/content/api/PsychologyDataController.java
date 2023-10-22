@@ -31,7 +31,8 @@ public class PsychologyDataController {
     @PutMapping("/update")
     public R<String> update(HttpServletRequest request){
         String token = request.getHeader("token");
-        Long userId = TokenUtils.getUserId(token);
+        TokenUtils.User user = TokenUtils.getUser(token);
+        Long userId = user.getId();
         PsychologyData psychologyData = new PsychologyData();
         psychologyData.setId(userId);
         psychologyData.setIsShowed(true);
@@ -43,10 +44,8 @@ public class PsychologyDataController {
     public R<PsychologyData> get(HttpServletRequest request){
         boolean flag=true;
         String token = request.getHeader("token");
-        Long userId = TokenUtils.getUserId(token);
-        LambdaQueryWrapper<User> queryWrapper1 = new LambdaQueryWrapper<>();
-        queryWrapper1.eq(User::getId,userId);
-        User user = userService.getOne(queryWrapper1);
+        TokenUtils.User user = TokenUtils.getUser(token);
+        Long userId = user.getId();
         LambdaQueryWrapper<PsychologyData> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.eq(PsychologyData::getId,userId);
         PsychologyData psychologyData = psychologyDataService.getOne(queryWrapper);

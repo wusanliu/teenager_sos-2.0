@@ -2,6 +2,7 @@ package com.teenager.auth.controller;
 
 
 import cn.hutool.jwt.JWT;
+import com.alibaba.fastjson.JSON;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.teenager.auth.common.R;
 import com.teenager.auth.config.TokenUtils;
@@ -40,9 +41,14 @@ public class UserController {
                 new UsernamePasswordAuthenticationToken(user.getUsername(), user.getPassword());
         authenticationManager.authenticate(authenticationToken);
 
+        User user1 = userService.getUserByName(user.getUsername());
+        //为了安全在令牌中不放密码
+        user1.setPassword(null);
+        //将user对象转json
+        String userString = JSON.toJSONString(user1);
         //上一步没有抛出异常说明认证成功，我们向用户颁发jwt令牌
         String token = JWT.create()
-                .setPayload("username", user.getUsername())
+                .setPayload("username", userString)
                 .setKey("JWT_KEY".getBytes(StandardCharsets.UTF_8))
                 .sign();
         UserDto userDto = new UserDto();
@@ -78,10 +84,12 @@ public class UserController {
     @GetMapping("/getUser")
     public R<User> getUser(HttpServletRequest request){
         String token = request.getHeader("token");
-        Long userId = TokenUtils.getUserId(token);
+        TokenUtils.User user1 = TokenUtils.getUser(token);
+        Long userId = user1.getId();
         LambdaQueryWrapper<User> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.eq(User::getId,userId);
         User user = userService.getOne(queryWrapper);
+        user.setPassword("    ");
         return R.success(user);
     }
 
@@ -94,7 +102,8 @@ public class UserController {
     @PutMapping("/update")
     public R<String> update(HttpServletRequest request,@RequestBody User user){
         String token = request.getHeader("token");
-        Long userId = TokenUtils.getUserId(token);
+        TokenUtils.User user1 = TokenUtils.getUser(token);
+        Long userId = user1.getId();
         LambdaQueryWrapper<User> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.eq(User::getId,userId);
         user.setId(userId);
@@ -112,7 +121,8 @@ public class UserController {
     @PutMapping("/updatePassword")
     public R<String> updatePassword(HttpServletRequest request,String newPassword,String oldPassword){
         String token = request.getHeader("token");
-        Long userId = TokenUtils.getUserId(token);
+        TokenUtils.User user1 = TokenUtils.getUser(token);
+        Long userId = user1.getId();
         LambdaQueryWrapper<User> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.eq(User::getId,userId);
         User user = userService.getOne(queryWrapper);

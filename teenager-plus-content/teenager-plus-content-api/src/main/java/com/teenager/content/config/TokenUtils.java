@@ -1,15 +1,11 @@
 package com.teenager.content.config;
 
-import com.auth0.jwt.JWT;
-import com.auth0.jwt.JWTVerifier;
-import com.auth0.jwt.algorithms.Algorithm;
-import com.auth0.jwt.interfaces.Claim;
-import com.auth0.jwt.interfaces.DecodedJWT;
+import cn.hutool.jwt.JWTUtil;
+import com.alibaba.fastjson.JSON;
+import lombok.Data;
 import org.springframework.context.annotation.Configuration;
 
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
+import java.io.Serializable;
 
 /**
  * @author Xue
@@ -21,53 +17,40 @@ import java.util.Map;
  */
 @Configuration
 public class TokenUtils {
-    //设置过期时间
-    private static final long EXPIRE_DATE=30*60*100000;
     //token秘钥
     private static final String TOKEN_SECRET = "JWT_KEY";
 
-    public static String token (Long userId,String password){
-
-        String token = "";
-        try {
-            //过期时间
-            Date date = new Date(System.currentTimeMillis()+EXPIRE_DATE);
-            //秘钥及加密算法
-            Algorithm algorithm = Algorithm.HMAC256(TOKEN_SECRET);
-            //设置头部信息
-            Map<String,Object> header = new HashMap<>();
-            header.put("typ","JWT");
-            header.put("alg","HS256");
-            //携带username，password信息，生成签名
-            token = JWT.create()
-                    .withHeader(header)
-                    .withClaim("userId",userId)
-                    .withClaim("password",password).withExpiresAt(date)
-                    .sign(algorithm);
-        }catch (Exception e){
-            e.printStackTrace();
-            return  null;
-        }
-        return token;
+    public static User getUser(String token){
+        String username = (String)JWTUtil.parseToken(token).getPayload("username");
+        System.out.println(username);
+        return JSON.parseObject(username, User.class);
     }
 
-    public static boolean verify(String token){
-        /**
-         * @desc   验证token，通过返回true
-         * @params [token]需要校验的串
-         **/
-        try {
-            Algorithm algorithm = Algorithm.HMAC256(TOKEN_SECRET);
-            JWTVerifier verifier = JWT.require(algorithm).build();
-            DecodedJWT jwt = verifier.verify(token);
-            return true;
-        }catch (Exception e){
-            e.printStackTrace();
-            return  false;
-        }
-    }
-    public static Long getUserId(String token){
-        Claim username = JWT.decode(token).getClaim("userId");
-        return username.asLong();
+    @Data
+    public static class User implements Serializable {
+
+        private static final long serialVersionUID = 1L;
+
+        //    用于连接其他表，自增
+        private Long id;
+
+        private String username;
+
+        private String password;
+
+        //    区分用户 1青少年，2父母，3医生
+        private Integer userType;
+
+        private String picturePath;
+
+        private String gender;
+
+        private String address;
+
+        private String email;
+
+        private String introduce;
+
+        private String weiboUsername;
     }
 }

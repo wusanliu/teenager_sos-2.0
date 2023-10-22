@@ -57,7 +57,8 @@ public class PhysiologyDataController {
             int climb=RandomInt(100,500);
             Integer heat=RandomInt(steps*36/1000,steps*48/1000)+RandomInt(climb/20,climb/10);
             String token = request.getHeader("token");
-            Long userId = TokenUtils.getUserId(token);
+            TokenUtils.User user = TokenUtils.getUser(token);
+            Long userId = user.getId();
 //           设置数据
             PhysiologyData physiologyData = new PhysiologyData(null,heartData.getHeart(),bloodHighPressure,bloodLowPressure,bloodOxygen,temperature,sleepTime,steps,exerciseTime,distance,heat,climb,userId,new Date());
             physiologyDataService.save(physiologyData);
@@ -73,7 +74,8 @@ public class PhysiologyDataController {
     @GetMapping("/getLast")
     public R<PhysiologyData> getLast(HttpSession session,HttpServletRequest request){
         String token = request.getHeader("token");
-        Long userId = TokenUtils.getUserId(token);
+        TokenUtils.User user = TokenUtils.getUser(token);
+        Long userId = user.getId();
         LambdaQueryWrapper<PhysiologyData> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.orderByDesc(PhysiologyData::getCreateTime);
         queryWrapper.eq(PhysiologyData::getUserId,userId);
@@ -89,9 +91,12 @@ public class PhysiologyDataController {
      */
     @GetMapping("/getAll")
     public R<List<PhysiologyData>> getAll(HttpSession session,HttpServletRequest request){
-        System.out.println("11111111111");
+        System.out.println("111111111111111111111111111111111");
         String token = request.getHeader("token");
-        Long userId = TokenUtils.getUserId(token);
+        TokenUtils.User user = TokenUtils.getUser(token);
+        Long userId = user.getId();
+        System.out.println(user.getUsername());
+        System.out.println(userId);
         Object o = redisTemplate.opsForValue().get("physiology:" + userId);
         if(o==null){
             RLock lock=redissonClient.getLock("physiologyquerylock:"+userId);
@@ -126,7 +131,8 @@ public class PhysiologyDataController {
     @GetMapping("/getLastSeven")
     public R<List<PhysiologyData>> getLastSeven(HttpSession session,HttpServletRequest request){
         String token = request.getHeader("token");
-        Long userId = TokenUtils.getUserId(token);
+        TokenUtils.User user = TokenUtils.getUser(token);
+        Long userId = user.getId();
         LambdaQueryWrapper<PhysiologyData> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.eq(PhysiologyData::getUserId,userId);
         queryWrapper.orderByDesc(PhysiologyData::getCreateTime);

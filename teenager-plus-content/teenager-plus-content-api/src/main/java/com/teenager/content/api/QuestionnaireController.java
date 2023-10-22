@@ -64,7 +64,8 @@ public class QuestionnaireController {
 
 //       将结果记录并返回
         String token = request.getHeader("token");
-        Long userId = TokenUtils.getUserId(token);
+        TokenUtils.User user = TokenUtils.getUser(token);
+        Long userId = user.getId();
         String result;
         if (questionReturn.getId()==1){
             if (score>=0&&score<=10){

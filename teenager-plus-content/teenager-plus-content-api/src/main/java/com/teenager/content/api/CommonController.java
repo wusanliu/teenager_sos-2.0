@@ -82,8 +82,10 @@ public class CommonController {
         }
 
 //
+
         String token = request.getHeader("token");
-        Long userId = TokenUtils.getUserId(token);
+        TokenUtils.User user1 = TokenUtils.getUser(token);
+        Long userId = user1.getId();
         LambdaQueryWrapper<User> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.eq(User::getId,userId);
         User user = userService.getOne(queryWrapper);

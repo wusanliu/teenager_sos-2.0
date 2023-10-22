@@ -1,6 +1,7 @@
 package com.teenager.auth.security;
 
 import cn.hutool.jwt.JWTUtil;
+import com.teenager.auth.config.TokenUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -40,8 +41,8 @@ public class JwtAuthenticationTokenFilter extends OncePerRequestFilter {
             return;
         }
 
-        final String userName = (String) JWTUtil.parseToken(authToken).getPayload("username");
-        UserDetails userDetails = userDetailsService.loadUserByUsername(userName);
+        TokenUtils.User user = TokenUtils.getUser(authToken);
+        UserDetails userDetails = userDetailsService.loadUserByUsername(user.getUsername());
 
         // 注意，这里使用的是3个参数的构造方法，此构造方法将认证状态设置为true
         UsernamePasswordAuthenticationToken authentication =
