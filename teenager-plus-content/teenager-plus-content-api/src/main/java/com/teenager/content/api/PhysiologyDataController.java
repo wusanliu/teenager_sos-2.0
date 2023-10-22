@@ -89,6 +89,7 @@ public class PhysiologyDataController {
      */
     @GetMapping("/getAll")
     public R<List<PhysiologyData>> getAll(HttpSession session,HttpServletRequest request){
+        System.out.println("11111111111");
         String token = request.getHeader("token");
         Long userId = TokenUtils.getUserId(token);
         Object o = redisTemplate.opsForValue().get("physiology:" + userId);
