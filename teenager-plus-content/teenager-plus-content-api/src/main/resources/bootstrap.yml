@@ -4,7 +4,7 @@ spring:
     name: content-api
   cloud:
     nacos:
-      server-addr: 192.168.136.133:8848
+      server-addr: 121.37.109.0:8848
       discovery:
         namespace: dev
         group: teenager-plus-project

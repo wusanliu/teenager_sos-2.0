@@ -13,6 +13,8 @@
 <!--		<module>../</module>-->
 		<module>../teenager-plus-base</module>
 		<module>../teenager-plus-content</module>
+		<module>../teenager-plus-gateway</module>
+		<module>../teenager-plus-auth</module>
 	</modules>
 
 	<properties>

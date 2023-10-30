@@ -24,7 +24,7 @@ singleServerConfig:
   #执行失败最大次数
   failedAttempts: 3
   #密码
-#  password: root
+  password: root
   #数据库选择 select 4
   database: 0
   #每个连接的最大订阅数量。
@@ -33,7 +33,7 @@ singleServerConfig:
   #在Redis节点里显示的客户端名称。
   clientName: null
   #在Redis节点
-  address: "redis://localhost:6379"
+  address: "redis://116.204.122.64:6379"
   #从节点发布和订阅连接的最小空闲连接数
   #默认值：1
   subscriptionConnectionMinimumIdleSize: 1
