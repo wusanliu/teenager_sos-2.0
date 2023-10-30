@@ -15,6 +15,7 @@
 		<module>../teenager-plus-content</module>
 		<module>../teenager-plus-gateway</module>
 		<module>../teenager-plus-auth</module>
+		<module>../teenager-plus-media</module>
 	</modules>
 
 	<properties>

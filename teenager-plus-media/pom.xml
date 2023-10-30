@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <artifactId>teenager-plus-parent</artifactId>
+        <groupId>com.teenager</groupId>
+        <version>0.0.1-SNAPSHOT</version>
+        <relativePath>../teenager-plus-parent</relativePath>
+    </parent>
+    <artifactId>teenager-plus-media</artifactId>
+    <name>teenager-plus-media</name>
+    <description>teenager-plus-media</description>
+    <packaging>pom</packaging>
+
+    <modules>
+        <module>teenager-plus-media-api</module>
+        <module>teenager-plus-media-service</module>
+        <module>teenager-plus-media-model</module>
+    </modules>
+</project>

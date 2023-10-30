@@ -1,4 +1,4 @@
-package com.teenager.auth.config;
+package com.teenager.media.config;
 
 import com.baomidou.mybatisplus.annotation.DbType;
 import com.baomidou.mybatisplus.extension.plugins.MybatisPlusInterceptor;
@@ -13,7 +13,7 @@ import org.springframework.context.annotation.Configuration;
  * </p>
  */
 @Configuration
-@MapperScan("com.teenager.ucenter.mapper")
+@MapperScan("com.teenager.media.mapper")
 public class MybatisPlusConfig {
 	/**
 	 * 新的分页插件
