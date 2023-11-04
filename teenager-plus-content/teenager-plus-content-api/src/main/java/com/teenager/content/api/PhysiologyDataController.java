@@ -86,17 +86,17 @@ public class PhysiologyDataController {
 
     /**
      * 获取所有生理数据
-     * @param session
+     * @param request
      * @return
      */
     @GetMapping("/getAll")
-    public R<List<PhysiologyData>> getAll(HttpSession session,HttpServletRequest request){
-        System.out.println("111111111111111111111111111111111");
+    public R<List<PhysiologyData>> getAll(HttpServletRequest request){
+//        System.out.println("111111111111111111111111111111111");
         String token = request.getHeader("token");
         TokenUtils.User user = TokenUtils.getUser(token);
         Long userId = user.getId();
-        System.out.println(user.getUsername());
-        System.out.println(userId);
+//        System.out.println(user.getUsername());
+//        System.out.println(userId);
         Object o = redisTemplate.opsForValue().get("physiology:" + userId);
         if(o==null){
             RLock lock=redissonClient.getLock("physiologyquerylock:"+userId);

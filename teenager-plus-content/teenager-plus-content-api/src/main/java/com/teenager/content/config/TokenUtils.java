@@ -22,7 +22,7 @@ public class TokenUtils {
 
     public static User getUser(String token){
         String username = (String)JWTUtil.parseToken(token).getPayload("username");
-        System.out.println(username);
+//        System.out.println(username);
         return JSON.parseObject(username, User.class);
     }
 

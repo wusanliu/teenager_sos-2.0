@@ -1,13 +1,12 @@
 package com.teenager.content.api;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.teenager.content.common.R;
 import com.teenager.content.model.po.Article;
 import com.teenager.content.service.ArticleService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -30,5 +29,18 @@ public class ArticleController {
     public R<List<Article>> newArticle(){
         List<Article> articles = articleService.list();
         return R.success(articles);
+    }
+
+    @GetMapping("/getOne")
+    public R<Article> getOne(Long id){
+        LambdaQueryWrapper<Article> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(Article::getId,id);
+        Article article = articleService.getOne(queryWrapper);
+        return R.success(article);
+    }
+    @PostMapping("/articles")
+    public R<String> uploadArticle(@RequestBody Article article){
+        articleService.save(article);
+        return R.success("上传成功");
     }
 }

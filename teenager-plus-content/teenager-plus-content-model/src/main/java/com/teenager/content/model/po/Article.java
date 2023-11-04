@@ -2,6 +2,8 @@ package com.teenager.content.model.po;
 
 import lombok.Data;
 
+import java.util.Date;
+
 /**
  * @author Xue
  * @create 2023-04-25-10:20
@@ -17,6 +19,15 @@ public class Article {
 
     private String content;
 
-    private String picturePath;
+    private String avator;
 
+    private String tag;
+
+    private Integer thumb;
+
+    private Integer comment;
+
+    private Integer view;
+
+    private Date publishDate;
 }
